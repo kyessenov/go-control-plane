@@ -3,7 +3,7 @@
 # https://github.com/google/protobuf/pull/3761.
 PROTOBUF_SHA = "c4f59dcc5c13debc572154c8f636b8a9361aacde"
 
-ENVOY_API_SHA = "735db494016848bc3f7846878fc45d5452e42d07"
+ENVOY_API_SHA = "c2e8b6464820675c9bcc2e1d778b8f5d12de1133"
 
 def protobuf_dependencies():
     native.http_archive(
@@ -41,8 +41,10 @@ def gorules_dependencies():
     )
 
 def envoy_api_dependencies():
+    ENVOY_API_SHA = "7ddc3491ea11c937e7ec5fa666febe4f4d404ac0"
     native.http_archive(
         name = "envoy_api",
-        strip_prefix = "data-plane-api-" + ENVOY_API_SHA,
-        urls = ["https://github.com/envoyproxy/data-plane-api/archive/" + ENVOY_API_SHA + ".tar.gz"],
+        strip_prefix = "envoy-api-" + ENVOY_API_SHA,
+        # urls = ["https://github.com/envoyproxy/data-plane-api/archive/" + ENVOY_API_SHA + ".tar.gz"],
+        urls = ["https://github.com/kyessenov/envoy-api/archive/" + ENVOY_API_SHA + ".tar.gz"],
     )
