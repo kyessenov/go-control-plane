@@ -1,0 +1,95 @@
+node:
+  id: server
+  cluster: test-cluster
+admin:
+  access_log_path: /dev/null
+  address:
+    socket_address:
+      address: 127.0.0.1
+      port_value: 9090
+static_resources:
+  clusters:
+  - connect_timeout: 1s
+    load_assignment:
+      cluster_name: authz
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 9091
+    http2_protocol_options: {}
+    name: authz
+  - connect_timeout: 1s
+    load_assignment:
+      cluster_name: loop
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 9000
+    http2_protocol_options: {}
+    name: loop
+  listeners:
+  - name: staticreply
+    address:
+      socket_address:
+        address: 127.0.0.1
+        port_value: 9000
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        config:
+          stat_prefix: staticreply
+          codec_type: auto
+          route_config:
+            name: staticreply
+            virtual_hosts:
+            - name: staticreply
+              domains: ["*"]
+              routes:
+              - match:
+                  prefix: "/"
+                direct_response:
+                  status: 200
+                  body:
+                    inline_string: "hello, world!"
+          http_filters:
+          - name: envoy.router
+            config: {}
+  - name: loop
+    address:
+      socket_address:
+        address: 127.0.0.1
+        port_value: 9001
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        config:
+          stat_prefix: loop
+          codec_type: auto
+          route_config:
+            name: loop
+            virtual_hosts:
+            - name: loop
+              domains: ["*"]
+              routes:
+              - match:
+                  prefix: "/"
+                route:
+                  cluster: loop
+          http_filters:
+          - name: envoy.ext_authz
+            config:
+              grpc_service:
+                #envoy_grpc:
+                #  cluster_name: authz
+                google_grpc:
+                  target_uri: 127.0.0.1:9091
+                  stat_prefix: grpc
+                timeout: 1s
+          - name: envoy.router
+            config: {}
