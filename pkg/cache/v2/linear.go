@@ -50,8 +50,6 @@ type LinearCache struct {
 	mu            sync.Mutex
 }
 
-var _ Cache = &LinearCache{}
-
 // Options for modifying the behavior of the linear cache.
 type LinearCacheOption func(*LinearCache)
 

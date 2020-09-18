@@ -37,8 +37,6 @@ import (
 // SnapshotCache can operate as a REST or regular xDS backend. The snapshot
 // can be partial, e.g. only include RDS or EDS resources.
 type SnapshotCache interface {
-	Cache
-
 	// SetSnapshot sets a response snapshot for a node. For ADS, the snapshots
 	// should have distinct versions and be internally consistent (e.g. all
 	// referenced resources must be included in the snapshot).
