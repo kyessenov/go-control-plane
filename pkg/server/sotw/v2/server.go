@@ -158,12 +158,21 @@ func (s *server) process(stream Stream, reqCh <-chan *discovery.DiscoveryRequest
 		case <-s.ctx.Done():
 			return nil
 		case resp := <-values.responses:
-			typeUrl := resp.GetRequest().TypeUrl
-			nonce, err := send(resp, typeUrl)
-			if err != nil {
-				return err
+			// drain response to maintain the ordering
+			for {
+				typeUrl := resp.GetRequest().TypeUrl
+				nonce, err := send(resp, typeUrl)
+				if err != nil {
+					return err
+				}
+				values.nonces[typeUrl] = nonce
+
+				select {
+				case resp = <-values.responses:
+				default:
+					break
+				}
 			}
-			values.nonces[typeUrl] = nonce
 
 		case req, more := <-reqCh:
 			// input stream ended or errored out
